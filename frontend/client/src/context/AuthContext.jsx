@@ -1,7 +1,11 @@
-import { createContext, useContext, useState } from "react";
+
+import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 
 const AuthContext = createContext(null);
+
+const API = import.meta.env.VITE_API_BASE_URL
+    || "http://127.0.0.1:8000";
 
 function decodeToken(token) {
     const payload = token.split(".")[1];
@@ -13,20 +17,15 @@ function decodeToken(token) {
 
 function getStoredUser() {
     const token = localStorage.getItem("token");
+    const refresh = localStorage.getItem("refresh_token");
 
-    if (!token) return null;
+    if (!token || !refresh) return null;
 
     try {
-        const user = decodeToken(token);
-
-        if (user.exp * 1000 <= Date.now()) {
-            localStorage.removeItem("token");
-            return null;
-        }
-
-        return user;
+        return decodeToken(token);
     } catch {
         localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
         return null;
     }
 }
@@ -34,37 +33,59 @@ function getStoredUser() {
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(getStoredUser);
 
+    useEffect(() => {
+        const onLogout = () => setUser(null);
+
+        const onRefresh = () => {
+            const token = localStorage.getItem("token");
+            if (token) setUser(decodeToken(token));
+        };
+
+        window.addEventListener("auth:logout", onLogout);
+        window.addEventListener("auth:refresh", onRefresh);
+
+        return () => {
+            window.removeEventListener("auth:logout", onLogout);
+            window.removeEventListener("auth:refresh", onRefresh);
+        };
+    }, []);
+
     async function login(username, password) {
         const formData = new URLSearchParams();
 
         formData.append("username", username);
         formData.append("password", password);
 
-        const response = await axios.post(
-            "http://127.0.0.1:8000/auth/token",
-            formData
-        );
+        const response = await axios.post(`${API}/auth/token`, formData);
 
-        const token = response.data.access_token;
-        const decodedUser = decodeToken(token);
+        const { access_token, refresh_token } = response.data;
 
-        localStorage.setItem("token", token);
-        setUser(decodedUser);
+        localStorage.setItem("token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+
+        setUser(decodeToken(access_token));
     }
 
-    function logout() {
+    async function logout() {
+        const refreshToken = localStorage.getItem("refresh_token");
+
         localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
         setUser(null);
+
+        if (refreshToken) {
+            try {
+                await axios.post(`${API}/auth/logout`, {
+                    refresh_token: refreshToken
+                });
+            } catch (error) {
+                console.error("Logout request failed", error);
+            }
+        }
     }
 
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                login,
-                logout
-            }}
-        >
+        <AuthContext.Provider value={{ user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

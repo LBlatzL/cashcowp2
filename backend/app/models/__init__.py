@@ -4,6 +4,7 @@ from .atm import Atm
 from .technician import Technician
 from .user import User
 from .servicecall import Service_call
+from .refresh_token import RefreshToken
 
 __all__ = [
     "Base",
@@ -11,5 +12,6 @@ __all__ = [
     "Atm",
     "Technician",
     "User",
-    "Service_call"
+    "Service_call",
+    "RefreshToken"
 ]

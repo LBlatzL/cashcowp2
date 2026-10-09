@@ -1,5 +1,6 @@
+
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../../api/client";
 import {
     Alert, Box, Button, Dialog, DialogActions,
     DialogContent, DialogTitle, MenuItem,
@@ -7,8 +8,6 @@ import {
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useAuth } from "../../context/AuthContext.jsx";
-
-const API = "http://127.0.0.1:8000";
 
 const priorities = ["low", "medium", "critical"];
 const statuses = ["pending", "in_progress", "completed", "failed"];
@@ -20,6 +19,56 @@ const emptyServiceCall = {
     atm_id: "",
     technician_id: ""
 };
+
+function formatCall(call) {
+    return {
+        ...call,
+        atm_id: Number(call.atm_id),
+        technician_id: Number(call.technician_id)
+    };
+}
+
+function ServiceCallFields({ call, setter }) {
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setter(current => ({ ...current, [name]: value }));
+    }
+
+    return (
+        <Stack spacing={2} sx={{ mt: 1 }}>
+            {Object.keys(emptyServiceCall).map(field => (
+                <TextField
+                    key={field}
+                    select={field === "priority" || field === "status"}
+                    label={field.replaceAll("_", " ").toUpperCase()}
+                    name={field}
+                    type={["atm_id", "technician_id"].includes(field) ? "number" : "text"}
+                    value={call[field] ?? ""}
+                    onChange={handleChange}
+                    size="small"
+                    required
+                    fullWidth
+                >
+                    {field === "priority" &&
+                        priorities.map(priority => (
+                            <MenuItem key={priority} value={priority}>
+                                {priority}
+                            </MenuItem>
+                        ))
+                    }
+
+                    {field === "status" &&
+                        statuses.map(status => (
+                            <MenuItem key={status} value={status}>
+                                {status}
+                            </MenuItem>
+                        ))
+                    }
+                </TextField>
+            ))}
+        </Stack>
+    );
+}
 
 export default function ServiceCallDataGrid() {
     const { user } = useAuth();
@@ -37,18 +86,12 @@ export default function ServiceCallDataGrid() {
 
     const [deleteId, setDeleteId] = useState(null);
 
-    const headers = () => ({
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-    });
-
+    // GET SERVICE CALLS
     async function fetchServiceCalls() {
         setLoading(true);
 
         try {
-            const res = await axios.get(`${API}/service/`, {
-                headers: headers()
-            });
-
+            const res = await apiClient.get("/service/");
             setServiceCalls(res.data);
             setError("");
         } catch {
@@ -62,29 +105,12 @@ export default function ServiceCallDataGrid() {
         fetchServiceCalls();
     }, []);
 
-    function handleChange(e, setter) {
-        const { name, value } = e.target;
-
-        setter(current => ({
-            ...current,
-            [name]: value
-        }));
-    }
-
-    function formatCall(call) {
-        return {
-            ...call,
-            atm_id: Number(call.atm_id),
-            technician_id: Number(call.technician_id)
-        };
-    }
-
+    // ADD SERVICE CALL
     async function handleAdd() {
         try {
-            await axios.post(
-                `${API}/service/`,
-                formatCall(newCall),
-                { headers: headers() }
+            await apiClient.post(
+                "/service/",
+                formatCall(newCall)
             );
 
             setAddOpen(false);
@@ -99,6 +125,7 @@ export default function ServiceCallDataGrid() {
         }
     }
 
+    // EDIT SERVICE CALL
     function openEdit(row) {
         setEditCall({ ...row });
         setEditOpen(true);
@@ -106,10 +133,9 @@ export default function ServiceCallDataGrid() {
 
     async function handleEdit() {
         try {
-            await axios.patch(
-                `${API}/service/${editCall.id}`,
-                formatCall(editCall),
-                { headers: headers() }
+            await apiClient.patch(
+                `/service/${editCall.id}`,
+                formatCall(editCall)
             );
 
             setEditOpen(false);
@@ -124,11 +150,10 @@ export default function ServiceCallDataGrid() {
         }
     }
 
+    // DELETE SERVICE CALL
     async function handleDelete() {
         try {
-            await axios.delete(`${API}/service/${deleteId}`, {
-                headers: headers()
-            });
+            await apiClient.delete(`/service/${deleteId}`);
 
             setDeleteId(null);
             await fetchServiceCalls();
@@ -153,7 +178,12 @@ export default function ServiceCallDataGrid() {
             width: 175,
             sortable: false,
             renderCell: ({ row }) => (
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ height: "100%" }}>
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ height: "100%" }}
+                >
                     <Button
                         size="small"
                         variant="outlined"
@@ -174,46 +204,8 @@ export default function ServiceCallDataGrid() {
         });
     }
 
-    function ServiceCallFields({ call, setter }) {
-        return (
-            <Stack spacing={2} sx={{ mt: 1 }}>
-                {Object.keys(emptyServiceCall).map(field => (
-                    <TextField
-                        key={field}
-                        select={field === "priority" || field === "status"}
-                        label={field.replaceAll("_", " ").toUpperCase()}
-                        name={field}
-                        type={["atm_id", "technician_id"].includes(field) ? "number" : "text"}
-                        value={call[field]}
-                        onChange={e => handleChange(e, setter)}
-                        size="small"
-                        required
-                        fullWidth
-                    >
-                        {field === "priority" &&
-                            priorities.map(priority => (
-                                <MenuItem key={priority} value={priority}>
-                                    {priority}
-                                </MenuItem>
-                            ))
-                        }
-
-                        {field === "status" &&
-                            statuses.map(status => (
-                                <MenuItem key={status} value={status}>
-                                    {status}
-                                </MenuItem>
-                            ))
-                        }
-                    </TextField>
-                ))}
-            </Stack>
-        );
-    }
-
     return (
         <Box sx={{ width: "100%", minWidth: 0 }}>
-
             <Box
                 sx={{
                     display: "grid",
@@ -307,7 +299,10 @@ export default function ServiceCallDataGrid() {
             {/* EDIT */}
             <Dialog
                 open={editOpen}
-                onClose={() => setEditOpen(false)}
+                onClose={() => {
+                    setEditOpen(false);
+                    setEditCall(null);
+                }}
                 fullWidth
                 maxWidth="xs"
             >
@@ -323,7 +318,12 @@ export default function ServiceCallDataGrid() {
                 </DialogContent>
 
                 <DialogActions>
-                    <Button onClick={() => setEditOpen(false)}>
+                    <Button
+                        onClick={() => {
+                            setEditOpen(false);
+                            setEditCall(null);
+                        }}
+                    >
                         Cancel
                     </Button>
 
@@ -361,7 +361,6 @@ export default function ServiceCallDataGrid() {
                     </Button>
                 </DialogActions>
             </Dialog>
-
         </Box>
     );
 }

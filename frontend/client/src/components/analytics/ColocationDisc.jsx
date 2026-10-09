@@ -1,11 +1,9 @@
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiClient from "../../api/client";
 import { Alert, Box, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useAuth } from "../../context/AuthContext.jsx";
-
-const API = "http://127.0.0.1:8000";
 
 export default function ColocationDisc() {
     const { user } = useAuth();
@@ -22,14 +20,7 @@ export default function ColocationDisc() {
             setLoading(true);
 
             try {
-                const response = await axios.get(
-                    `${API}/service/colocation`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("token")}`
-                        }
-                    }
-                );
+                const response = await apiClient.get("/service/colocation");
 
                 setDiscrepancies(response.data);
                 setError("");

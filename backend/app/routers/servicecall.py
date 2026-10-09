@@ -38,6 +38,7 @@ class ServiceCallRead(ServiceCallCreate):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class ServiceCallUpdate(BaseModel):
     title: str | None = None
     priority: Priority | None = None
@@ -52,7 +53,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[ServiceCallRead])
+@router.get("", response_model=list[ServiceCallRead])
 async def get_service_calls(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(
@@ -69,8 +70,9 @@ async def get_service_calls(
 
     return result.scalars().all()
 
+
 @router.post(
-    "/",
+    "",
     response_model=ServiceCallRead,
     status_code=status.HTTP_201_CREATED
 )
@@ -172,6 +174,7 @@ async def get_reliability(
     result = await db.execute(statement)
 
     return result.all()
+
 
 @router.patch(
     "/{call_id}",

@@ -1,84 +1,88 @@
 # =========================
-# Python / FastAPI Backend
+# PYTHON / FASTAPI
 # =========================
-
 __pycache__/
 *.py[cod]
-*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
 
-# Virtual environments
+# =========================
+# VIRTUAL ENVIRONMENTS
+# =========================
 .venv/
 venv/
 env/
 ENV/
 
-# Environment variables / secrets
+# =========================
+# ENVIRONMENT VARIABLES
+# =========================
 .env
 .env.*
 !.env.example
-
-# Pytest
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Type checking / linting
-.mypy_cache/
-.ruff_cache/
-
-# Python build files
-build/
-dist/
-*.egg-info/
-
+!.env.*.example
 
 # =========================
-# React / Node Frontend
+# REACT / VITE / NODE
 # =========================
-
 node_modules/
-
-# Vite / React build output
+.vite/
 dist/
-build/
-
-# Local environment files
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# npm / yarn logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
+coverage/
+*.local
 
 # =========================
-# IDE / Editor
+# AWS / DEPLOYMENT
 # =========================
+.aws-sam/
+.serverless/
+.terraform/
+*.tfstate
+*.tfstate.*
+lambda-package/
+lambda.zip
+deployment.zip
+*.pem
+*.key
 
+# =========================
+# DATABASE
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.dump
+*.backup
+
+# =========================
+# IDE / EDITOR
+# =========================
 .vscode/
 .idea/
-
 *.swp
 *.swo
 
-
 # =========================
-# Operating System
+# OS FILES
 # =========================
-
 .DS_Store
 Thumbs.db
 desktop.ini
 
-
 # =========================
-# Misc
+# LOGS
 # =========================
-
 *.log
-*.tmp
-*.temp
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

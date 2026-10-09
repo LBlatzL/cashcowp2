@@ -1,4 +1,3 @@
-
 import { Box, Typography } from "@mui/material";
 
 import AppHeader from "./components/layout/AppHeader.jsx";

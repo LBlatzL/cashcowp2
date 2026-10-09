@@ -20,4 +20,4 @@ class Branch(Base):
     supervisor_id: Mapped[int] = mapped_column()
 
     atms: Mapped[List["Atm"]] = relationship(back_populates="branch")
-    technicians: Mapped["Technician"] = relationship(back_populates="branch")
+    technicians: Mapped[List["Technician"]] = relationship(back_populates="branch")

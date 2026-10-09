@@ -1,14 +1,12 @@
 
 import { useState } from "react";
-import axios from "axios";
+import apiClient from "../../api/client";
 import {
     Alert, Box, Button, Stack,
     TextField, Typography
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { useAuth } from "../../context/AuthContext.jsx";
-
-const API = "http://127.0.0.1:8000";
 
 export default function Reporting() {
     const { user } = useAuth();
@@ -26,14 +24,11 @@ export default function Reporting() {
         setError("");
 
         try {
-            const response = await axios.get(
-                `${API}/technician/reporting-lines`,
+            const response = await apiClient.get(
+                "/technician/reporting-lines",
                 {
                     params: {
                         supervisor_id: Number(supervisorId)
-                    },
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("token")}`
                     }
                 }
             );

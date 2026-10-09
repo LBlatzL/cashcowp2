@@ -1,0 +1,41 @@
+CASHCOW ATM DIAGNOSTIC REPORT
+=============================
+Report ID: DIAG-2026-001
+Generated: 2026-10-09
+ATM ID: 101
+ATM Model: NCR-500
+Serial Number: 91001
+Branch: Tampa Central
+Technician ID: 101
+
+DIAGNOSTIC SUMMARY
+------------------
+Status: OPERATIONAL
+Cash Reserve: 15%
+Alert: LOW CASH RESERVE (below 20% threshold)
+Severity: MEDIUM
+
+CHECKS PERFORMED
+----------------
+[PASS] ATM communication and network connectivity
+[PASS] Card reader self-test
+[PASS] Cash dispenser self-test
+[PASS] Receipt printer self-test
+[WARN] Cash reserve below replenishment threshold
+
+FINDINGS
+--------
+The ATM is operational, but its available cash reserve is at 15%,
+below CashCow's 20% low-cash alert threshold. Continued operation
+without replenishment may result in a cash-out event.
+
+RECOMMENDED ACTION
+------------------
+Schedule a cash replenishment service call. Recheck cash reserve
+after replenishment and verify that the low-cash alert clears.
+
+NOTE
+----
+This is synthetic demonstration data for the CashCow P2 project.
+The diagnostic checks are illustrative and were not performed on
+physical ATM hardware.
